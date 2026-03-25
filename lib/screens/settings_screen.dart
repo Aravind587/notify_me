@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../main.dart';
+import '../main.dart'; // IMPORTANT for AppThemeMode + appThemeNotifier
 
 class SettingsScreen extends StatefulWidget {
   final AppThemeMode themeMode;
+
   const SettingsScreen({super.key, required this.themeMode});
 
   @override
@@ -11,86 +11,51 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  AppThemeMode get theme => widget.themeMode;
+
   bool _use24Hour = false;
   bool _showSeconds = true;
   bool _vibrateAlarm = true;
   bool _alarmSnooze = true;
   int _snoozeDuration = 5;
   String _alarmSound = 'Digital Bell';
+  String _theme = 'Dark';
   bool _notificationsEnabled = true;
   bool _persistentNotif = false;
   double _alarmVolume = 0.7;
-  bool _isLoading = true;
 
   final List<String> _alarmSounds = [
-    'Digital Bell', 'Gentle Chime', 'Radar', 'Sunrise', 'Classic Alarm', 'Beep Beep',
+    'Digital Bell',
+    'Gentle Chime',
+    'Radar',
+    'Sunrise',
+    'Classic Alarm',
+    'Beep Beep',
   ];
+
   final List<int> _snoozeOptions = [1, 3, 5, 10, 15, 20];
 
   @override
-  void initState() {
-    super.initState();
-    _loadSettings();
-  }
-
-  Future<void> _loadSettings() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _use24Hour = prefs.getBool('use24Hour') ?? false;
-      _showSeconds = prefs.getBool('showSeconds') ?? true;
-      _vibrateAlarm = prefs.getBool('vibrateAlarm') ?? true;
-      _alarmSnooze = prefs.getBool('alarmSnooze') ?? true;
-      _snoozeDuration = prefs.getInt('snoozeDuration') ?? 5;
-      _alarmSound = prefs.getString('alarmSound') ?? 'Digital Bell';
-      _notificationsEnabled = prefs.getBool('notificationsEnabled') ?? true;
-      _persistentNotif = prefs.getBool('persistentNotif') ?? false;
-      _alarmVolume = prefs.getDouble('alarmVolume') ?? 0.7;
-      final savedTheme = prefs.getString('theme') ?? 'Dark';
-      final themeMode = AppThemeMode.values.firstWhere(
-            (t) => t.label == savedTheme,
-        orElse: () => AppThemeMode.dark,
-      );
-      appThemeNotifier.value = themeMode;
-      _isLoading = false;
-    });
-  }
-
-  Future<void> _savePref(String key, dynamic value) async {
-    final prefs = await SharedPreferences.getInstance();
-    if (value is bool) await prefs.setBool(key, value);
-    if (value is int) await prefs.setInt(key, value);
-    if (value is String) await prefs.setString(key, value);
-    if (value is double) await prefs.setDouble(key, value);
-  }
-
-  void _changeTheme(String themeLabel) {
-    final themeMode = AppThemeMode.values.firstWhere(
-          (t) => t.label == themeLabel,
-      orElse: () => AppThemeMode.dark,
-    );
-    appThemeNotifier.value = themeMode;
-    _savePref('theme', themeLabel);
-  }
-
-  @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator(color: Color(0xFF00B4D8))),
-      );
-    }
-
     return Scaffold(
+      backgroundColor: theme.background,
       body: SafeArea(
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+              padding:
+              const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
               child: Row(
                 children: [
-                  const Text('SETTINGS',
-                      style: TextStyle(fontSize: 13, letterSpacing: 4,
-                          color: Color(0xFF4A6A90), fontWeight: FontWeight.w600)),
+                  Text(
+                    'SETTINGS',
+                    style: TextStyle(
+                      fontSize: 13,
+                      letterSpacing: 4,
+                      color: theme.textMuted,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -98,7 +63,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: ListView(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 children: [
-
                   _sectionHeader('CLOCK'),
                   _card([
                     _switchTile(
@@ -106,10 +70,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       title: '24-Hour Format',
                       subtitle: 'Show time in 24h format',
                       value: _use24Hour,
-                      onChanged: (v) {
-                        setState(() => _use24Hour = v);
-                        _savePref('use24Hour', v);
-                      },
+                      onChanged: (v) =>
+                          setState(() => _use24Hour = v),
                     ),
                     _divider(),
                     _switchTile(
@@ -117,10 +79,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       title: 'Show Seconds',
                       subtitle: 'Display seconds on clock face',
                       value: _showSeconds,
-                      onChanged: (v) {
-                        setState(() => _showSeconds = v);
-                        _savePref('showSeconds', v);
-                      },
+                      onChanged: (v) =>
+                          setState(() => _showSeconds = v),
                     ),
                   ]),
 
@@ -131,10 +91,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       title: 'Vibration',
                       subtitle: 'Vibrate when alarm rings',
                       value: _vibrateAlarm,
-                      onChanged: (v) {
-                        setState(() => _vibrateAlarm = v);
-                        _savePref('vibrateAlarm', v);
-                      },
+                      onChanged: (v) =>
+                          setState(() => _vibrateAlarm = v),
                     ),
                     _divider(),
                     _switchTile(
@@ -142,10 +100,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       title: 'Snooze',
                       subtitle: 'Allow snoozing alarms',
                       value: _alarmSnooze,
-                      onChanged: (v) {
-                        setState(() => _alarmSnooze = v);
-                        _savePref('alarmSnooze', v);
-                      },
+                      onChanged: (v) =>
+                          setState(() => _alarmSnooze = v),
                     ),
                     if (_alarmSnooze) ...[
                       _divider(),
@@ -155,13 +111,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         value: '$_snoozeDuration min',
                         onTap: () => _showPickerSheet(
                           'Snooze Duration',
-                          _snoozeOptions.map((v) => '$v min').toList(),
+                          _snoozeOptions
+                              .map((v) => '$v min')
+                              .toList(),
                           '$_snoozeDuration min',
-                              (v) {
-                            final val = int.parse(v.replaceAll(' min', ''));
-                            setState(() => _snoozeDuration = val);
-                            _savePref('snoozeDuration', val);
-                          },
+                              (v) => setState(() =>
+                          _snoozeDuration = int.parse(
+                              v.replaceAll(' min', ''))),
                         ),
                       ),
                     ],
@@ -174,11 +130,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         'Alarm Sound',
                         _alarmSounds,
                         _alarmSound,
-                            (v) {
-                          setState(() => _alarmSound = v);
-                          _savePref('alarmSound', v);
-                          _previewSound(v);
-                        },
+                            (v) => setState(() => _alarmSound = v),
                       ),
                     ),
                     _divider(),
@@ -186,10 +138,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       icon: Icons.volume_up_outlined,
                       title: 'Alarm Volume',
                       value: _alarmVolume,
-                      onChanged: (v) {
-                        setState(() => _alarmVolume = v);
-                        _savePref('alarmVolume', v);
-                      },
+                      onChanged: (v) =>
+                          setState(() => _alarmVolume = v),
                     ),
                   ]),
 
@@ -200,22 +150,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       title: 'Enable Notifications',
                       subtitle: 'Receive event reminders',
                       value: _notificationsEnabled,
-                      onChanged: (v) {
-                        setState(() => _notificationsEnabled = v);
-                        _savePref('notificationsEnabled', v);
-                      },
+                      onChanged: (v) =>
+                          setState(() => _notificationsEnabled = v),
                     ),
                     _divider(),
                     _switchTile(
                       icon: Icons.push_pin_outlined,
                       title: 'Persistent Notifications',
-                      subtitle: 'Keep reminders visible until dismissed',
+                      subtitle:
+                      'Keep reminders visible until dismissed',
                       value: _persistentNotif,
                       onChanged: _notificationsEnabled
-                          ? (v) {
-                        setState(() => _persistentNotif = v);
-                        _savePref('persistentNotif', v);
-                      }
+                          ? (v) => setState(
+                              () => _persistentNotif = v)
                           : null,
                     ),
                   ]),
@@ -225,35 +172,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     _pickerTile(
                       icon: Icons.palette_outlined,
                       title: 'Theme',
-                      value: appThemeNotifier.value.label,
+                      value: _theme,
                       onTap: () => _showPickerSheet(
                         'Theme',
-                        AppThemeMode.values.map((t) => t.label).toList(),
-                        appThemeNotifier.value.label,
-                        _changeTheme,
+                        ['Dark', 'Darker', 'Midnight', 'Ocean'],
+                        _theme,
+                            (v) {
+                          setState(() => _theme = v);
+
+                          final selected =
+                          AppThemeMode.values.firstWhere(
+                                (e) => e.label == v,
+                          );
+
+                          appThemeNotifier.value = selected;
+                        },
                       ),
-                    ),
-                  ]),
-
-                  // Theme preview
-                  const SizedBox(height: 8),
-                  _themePreviewCard(),
-
-                  _sectionHeader('ABOUT'),
-                  _card([
-                    _infoTile(Icons.info_outline, 'Version', '1.0.0'),
-                    _divider(),
-                    _infoTile(Icons.code, 'Build', 'Flutter · Dart'),
-                    _divider(),
-                    ListTile(
-                      dense: true,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                      leading: const Icon(Icons.star_outline,
-                          color: Color(0xFF00B4D8), size: 20),
-                      title: const Text('Rate the App',
-                          style: TextStyle(color: Colors.white, fontSize: 14)),
-                      trailing: const Icon(Icons.chevron_right,
-                          color: Color(0xFF4A6A90), size: 18),
                     ),
                   ]),
 
@@ -267,96 +201,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // Shows a snackbar preview when sound is selected
-  void _previewSound(String sound) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: const Color(0xFF0D1526),
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 2),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        content: Row(
-          children: [
-            const Icon(Icons.music_note, color: Color(0xFF00B4D8), size: 18),
-            const SizedBox(width: 10),
-            Text('Playing: $sound',
-                style: const TextStyle(color: Colors.white, fontSize: 13)),
-          ],
-        ),
-      ),
-    );
-    // To actually play sound, add audioplayers package:
-    // final player = AudioPlayer();
-    // await player.play(AssetSource('sounds/${sound.toLowerCase().replaceAll(' ', '_')}.mp3'));
-  }
-
-  Widget _themePreviewCard() {
-    final theme = appThemeNotifier.value;
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: theme.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: theme.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('PREVIEW — ${theme.label.toUpperCase()}',
-              style: const TextStyle(fontSize: 9, color: Color(0xFF4A6A90),
-                  letterSpacing: 1.5)),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Container(width: 32, height: 32,
-                  decoration: BoxDecoration(
-                      color: theme.primary.withOpacity(0.2),
-                      shape: BoxShape.circle,
-                      border: Border.all(color: theme.primary.withOpacity(0.5))),
-                  child: Icon(Icons.alarm, color: theme.primary, size: 16)),
-              const SizedBox(width: 12),
-              Expanded(child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Sample Alarm', style: const TextStyle(
-                      color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
-                  Text('Theme preview', style: TextStyle(
-                      color: theme.primary, fontSize: 11)),
-                ],
-              )),
-              Switch(value: true, onChanged: null,
-                  activeColor: theme.primary,
-                  activeTrackColor: theme.primary.withOpacity(0.3)),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _sectionHeader(String title) {
     return Padding(
-      padding: const EdgeInsets.only(left: 4, top: 20, bottom: 8),
-      child: Text(title,
-          style: const TextStyle(fontSize: 9, color: Color(0xFF4A6A90),
-              letterSpacing: 2, fontWeight: FontWeight.w700)),
+      padding:
+      const EdgeInsets.only(left: 4, top: 20, bottom: 8),
+      child: Text(
+        title,
+        style: TextStyle(
+          fontSize: 9,
+          color: theme.textMuted,
+          letterSpacing: 2,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
     );
   }
 
   Widget _card(List<Widget> children) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF0D1526),
+        color: theme.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFF1E3A5F)),
+        border: Border.all(color: theme.border),
       ),
       child: Column(children: children),
     );
   }
 
-  Widget _divider() => const Divider(
-      height: 1, color: Color(0xFF1E3A5F), indent: 52, endIndent: 0);
+  Widget _divider() => Divider(
+    height: 1,
+    color: theme.border,
+    indent: 52,
+  );
 
   Widget _switchTile({
     required IconData icon,
@@ -367,22 +243,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }) {
     return ListTile(
       dense: true,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: Icon(icon, color: const Color(0xFF00B4D8), size: 20),
-      title: Text(title, style: TextStyle(
-          color: onChanged != null ? Colors.white : const Color(0xFF4A6A90),
-          fontSize: 14, fontWeight: FontWeight.w500)),
+      leading: Icon(icon, color: theme.primary),
+      title: Text(
+        title,
+        style: TextStyle(
+          color: onChanged != null
+              ? theme.textPrimary
+              : theme.textMuted,
+        ),
+      ),
       subtitle: subtitle != null
-          ? Text(subtitle, style: const TextStyle(
-          color: Color(0xFF4A6A90), fontSize: 11))
+          ? Text(subtitle,
+          style: TextStyle(color: theme.textMuted))
           : null,
       trailing: Switch(
         value: value,
         onChanged: onChanged,
-        activeColor: const Color(0xFF00B4D8),
-        activeTrackColor: const Color(0xFF00B4D8).withOpacity(0.3),
-        inactiveThumbColor: const Color(0xFF4A6A90),
-        inactiveTrackColor: const Color(0xFF1E3A5F),
+        activeColor: theme.primary,
       ),
     );
   }
@@ -395,16 +272,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }) {
     return ListTile(
       dense: true,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: Icon(icon, color: const Color(0xFF00B4D8), size: 20),
-      title: Text(title, style: const TextStyle(
-          color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
+      leading: Icon(icon, color: theme.primary),
+      title: Text(title,
+          style: TextStyle(color: theme.textPrimary)),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(value, style: const TextStyle(color: Color(0xFF4A6A90), fontSize: 13)),
+          Text(value,
+              style: TextStyle(color: theme.textMuted)),
           const SizedBox(width: 4),
-          const Icon(Icons.chevron_right, color: Color(0xFF4A6A90), size: 18),
+          Icon(Icons.chevron_right,
+              color: theme.textMuted),
         ],
       ),
       onTap: onTap,
@@ -417,91 +295,42 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required double value,
     required ValueChanged<double> onChanged,
   }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Row(
-        children: [
-          Icon(icon, color: const Color(0xFF00B4D8), size: 20),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(title, style: const TextStyle(
-                        color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
-                    Text('${(value * 100).round()}%',
-                        style: const TextStyle(color: Color(0xFF4A6A90), fontSize: 12)),
-                  ],
-                ),
-                SliderTheme(
-                  data: SliderThemeData(
-                    activeTrackColor: const Color(0xFF00B4D8),
-                    inactiveTrackColor: const Color(0xFF1E3A5F),
-                    thumbColor: const Color(0xFF00B4D8),
-                    overlayColor: const Color(0xFF00B4D8).withOpacity(0.2),
-                    trackHeight: 3,
-                    thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
-                  ),
-                  child: Slider(value: value, onChanged: onChanged),
-                ),
-              ],
-            ),
+    return Row(
+      children: [
+        Icon(icon, color: theme.primary),
+        Expanded(
+          child: Slider(
+            value: value,
+            onChanged: onChanged,
+            activeColor: theme.primary,
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _infoTile(IconData icon, String title, String value) {
-    return ListTile(
-      dense: true,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: Icon(icon, color: const Color(0xFF00B4D8), size: 20),
-      title: Text(title, style: const TextStyle(
-          color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
-      trailing: Text(value, style: const TextStyle(
-          color: Color(0xFF4A6A90), fontSize: 13)),
+        ),
+      ],
     );
   }
 
   void _showPickerSheet(
-      String title, List<String> options, String current, ValueChanged<String> onSelect) {
+      String title,
+      List<String> options,
+      String current,
+      ValueChanged<String> onSelect,
+      ) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.transparent,
-      builder: (_) => Container(
-        decoration: const BoxDecoration(
-          color: Color(0xFF0D1526),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          border: Border(top: BorderSide(color: Color(0xFF1E3A5F))),
-        ),
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(width: 40, height: 4,
-                decoration: BoxDecoration(color: const Color(0xFF1E3A5F),
-                    borderRadius: BorderRadius.circular(2))),
-            const SizedBox(height: 16),
-            Text(title, style: const TextStyle(fontSize: 16,
-                fontWeight: FontWeight.w700, color: Colors.white)),
-            const SizedBox(height: 16),
-            ...options.map((opt) => ListTile(
-              title: Text(opt, style: const TextStyle(color: Colors.white)),
-              trailing: opt == current
-                  ? const Icon(Icons.check, color: Color(0xFF00B4D8), size: 20)
-                  : null,
-              onTap: () {
-                onSelect(opt);
-                Navigator.pop(context);
-              },
-            )),
-            const SizedBox(height: 8),
-          ],
-        ),
+      backgroundColor: theme.surface,
+      builder: (_) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: options
+            .map((opt) => ListTile(
+          title: Text(opt,
+              style: TextStyle(
+                  color: theme.textPrimary)),
+          onTap: () {
+            onSelect(opt);
+            Navigator.pop(context);
+          },
+        ))
+            .toList(),
       ),
     );
   }
