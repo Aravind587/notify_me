@@ -10,29 +10,141 @@ void main() {
   runApp(const ClockApp());
 }
 
+// Global notifier for theme
+final ValueNotifier<AppThemeMode> appThemeNotifier =
+ValueNotifier(AppThemeMode.dark);
+
+enum AppThemeMode { dark, darker, midnight, ocean }
+
+extension AppThemeModeExt on AppThemeMode {
+  String get label {
+    switch (this) {
+      case AppThemeMode.dark:      return 'Dark';
+      case AppThemeMode.darker:    return 'Darker';
+      case AppThemeMode.midnight:  return 'Midnight';
+      case AppThemeMode.ocean:     return 'Ocean';
+    }
+  }
+
+  // ── Backgrounds ──────────────────────────────────────────────────────────
+  Color get background {
+    switch (this) {
+      case AppThemeMode.dark:      return const Color(0xFF080D18); // Steel Blue — deep navy
+      case AppThemeMode.darker:    return const Color(0xFF06060C); // Obsidian — near-true black
+      case AppThemeMode.midnight:  return const Color(0xFF0A0A1E); // Aurora — deep indigo
+      case AppThemeMode.ocean:     return const Color(0xFF010F1E); // Abyss — darkest seabed
+    }
+  }
+
+  // ── Surfaces (slightly lighter than background) ───────────────────────────
+  Color get surface {
+    switch (this) {
+      case AppThemeMode.dark:      return const Color(0xFF0C1422);
+      case AppThemeMode.darker:    return const Color(0xFF09090F);
+      case AppThemeMode.midnight:  return const Color(0xFF0F0F28);
+      case AppThemeMode.ocean:     return const Color(0xFF031827);
+    }
+  }
+
+  // ── Cards ─────────────────────────────────────────────────────────────────
+  Color get card {
+    switch (this) {
+      case AppThemeMode.dark:      return const Color(0xFF111C30);
+      case AppThemeMode.darker:    return const Color(0xFF0E0E1A);
+      case AppThemeMode.midnight:  return const Color(0xFF161638);
+      case AppThemeMode.ocean:     return const Color(0xFF062033);
+    }
+  }
+
+  // ── Borders ───────────────────────────────────────────────────────────────
+  Color get border {
+    switch (this) {
+      case AppThemeMode.dark:      return const Color(0xFF1E3A6B);
+      case AppThemeMode.darker:    return const Color(0xFF1D1640);
+      case AppThemeMode.midnight:  return const Color(0xFF2D1B69);
+      case AppThemeMode.ocean:     return const Color(0xFF0A3D5C);
+    }
+  }
+
+  // ── Primary accent ────────────────────────────────────────────────────────
+  Color get primary {
+    switch (this) {
+      case AppThemeMode.dark:      return const Color(0xFF38BDF8); // Sky blue — vibrant but not harsh
+      case AppThemeMode.darker:    return const Color(0xFF9B87F5); // Soft violet — pops on true black
+      case AppThemeMode.midnight:  return const Color(0xFFC084FC); // Lavender purple — aurora feel
+      case AppThemeMode.ocean:     return const Color(0xFF00E5FF); // Cyan — crisp ocean highlight
+    }
+  }
+
+  // ── Secondary accent (use for badges, tags, highlights) ──────────────────
+  Color get accent {
+    switch (this) {
+      case AppThemeMode.dark:      return const Color(0xFF34D399); // Mint green
+      case AppThemeMode.darker:    return const Color(0xFF60A5FA); // Cool blue
+      case AppThemeMode.midnight:  return const Color(0xFF34D399); // Emerald — contrasts with purple
+      case AppThemeMode.ocean:     return const Color(0xFFF59E0B); // Warm amber — warm/cool contrast
+    }
+  }
+
+  // ── NavBar ────────────────────────────────────────────────────────────────
+  Color get navBar {
+    switch (this) {
+      case AppThemeMode.dark:      return const Color(0xFF0D1E3D);
+      case AppThemeMode.darker:    return const Color(0xFF07070E);
+      case AppThemeMode.midnight:  return const Color(0xFF0C0C22);
+      case AppThemeMode.ocean:     return const Color(0xFF011424);
+    }
+  }
+
+  // ── Text colors ───────────────────────────────────────────────────────────
+  Color get textPrimary {
+    switch (this) {
+      case AppThemeMode.dark:      return const Color(0xFFE2EBF6);
+      case AppThemeMode.darker:    return const Color(0xFFD4D0F0);
+      case AppThemeMode.midnight:  return const Color(0xFFE0D9FF);
+      case AppThemeMode.ocean:     return const Color(0xFFCAEEFF);
+    }
+  }
+
+  Color get textMuted {
+    switch (this) {
+      case AppThemeMode.dark:      return const Color(0xFF4A7BAD);
+      case AppThemeMode.darker:    return const Color(0xFF6655AA);
+      case AppThemeMode.midnight:  return const Color(0xFF6644AA);
+      case AppThemeMode.ocean:     return const Color(0xFF2A7A96);
+    }
+  }
+}
+
 class ClockApp extends StatelessWidget {
   const ClockApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Clock App',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: const Color(0xFF0A0E1A),
-        colorScheme: const ColorScheme.dark(
-          primary: Color(0xFF00B4D8),
-          secondary: Color(0xFF00FFB3),
-          surface: Color(0xFF111827),
-        ),
-      ),
-      home: const MainShell(),
+    return ValueListenableBuilder<AppThemeMode>(
+      valueListenable: appThemeNotifier,
+      builder: (context, themeMode, _) {
+        return MaterialApp(
+          title: 'notify_me',
+          debugShowCheckedModeBanner: false,
+          theme: ThemeData.dark().copyWith(
+            scaffoldBackgroundColor: themeMode.background,
+            colorScheme: ColorScheme.dark(
+              primary: themeMode.primary,
+              secondary: const Color(0xFF00FFB3),
+              surface: themeMode.surface,
+            ),
+          ),
+          home: MainShell(themeMode: themeMode),
+        );
+      },
     );
   }
 }
 
 class MainShell extends StatefulWidget {
-  const MainShell({super.key});
+  final AppThemeMode themeMode;
+  const MainShell({super.key, required this.themeMode});
 
   @override
   State<MainShell> createState() => _MainShellState();
@@ -41,13 +153,13 @@ class MainShell extends StatefulWidget {
 class _MainShellState extends State<MainShell> {
   int _currentIndex = 0;
 
-  final List<Widget> _screens = const [
-    ClockScreen(),
-    AlarmScreen(),
-    StopwatchScreen(),
-    WorldClockScreen(),
-    EventsScreen(),
-    SettingsScreen(),
+  List<Widget> get _screens => [
+    const ClockScreen(),
+    const AlarmScreen(),
+    const StopwatchScreen(),
+    const WorldClockScreen(),
+    const EventsScreen(),
+    SettingsScreen(themeMode: widget.themeMode),
   ];
 
   final List<_NavItem> _navItems = const [
@@ -61,15 +173,16 @@ class _MainShellState extends State<MainShell> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = widget.themeMode;
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
         children: _screens,
       ),
       bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          color: Color(0xFF0D1526),
-          border: Border(top: BorderSide(color: Color(0xFF1E3A5F), width: 1)),
+        decoration: BoxDecoration(
+          color: theme.navBar,
+          border: Border(top: BorderSide(color: theme.border, width: 1)),
         ),
         child: SafeArea(
           child: SizedBox(
@@ -88,7 +201,7 @@ class _MainShellState extends State<MainShell> {
                         Icon(
                           isActive ? item.activeIcon : item.icon,
                           size: 22,
-                          color: isActive ? const Color(0xFF00B4D8) : const Color(0xFF4A6A90),
+                          color: isActive ? theme.primary : const Color(0xFF4A6A90),
                         ),
                         const SizedBox(height: 3),
                         Text(
@@ -97,7 +210,7 @@ class _MainShellState extends State<MainShell> {
                             fontSize: 9,
                             letterSpacing: 0.5,
                             fontWeight: isActive ? FontWeight.w700 : FontWeight.w400,
-                            color: isActive ? const Color(0xFF00B4D8) : const Color(0xFF4A6A90),
+                            color: isActive ? theme.primary : const Color(0xFF4A6A90),
                           ),
                         ),
                       ],
