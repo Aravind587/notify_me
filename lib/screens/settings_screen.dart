@@ -18,19 +18,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _vibrateAlarm = true;
   bool _alarmSnooze = true;
   int _snoozeDuration = 5;
-  String _alarmSound = 'Digital Bell';
+  String _alarmSound = 'alarm_default';
   String _theme = 'Dark';
   bool _notificationsEnabled = true;
   bool _persistentNotif = false;
   double _alarmVolume = 0.7;
 
   final List<String> _alarmSounds = [
-    'Digital Bell',
-    'Gentle Chime',
-    'Radar',
-    'Sunrise',
-    'Classic Alarm',
-    'Beep Beep',
+    'Default',
+    'Morning call',
+    'Warning alert',
   ];
 
   final List<int> _snoozeOptions = [1, 3, 5, 10, 15, 20];

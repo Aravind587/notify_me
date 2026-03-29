@@ -7,18 +7,15 @@ import 'screens/stopwatch_screen.dart';
 import 'screens/world_clock_screen.dart';
 import 'screens/events_screen.dart';
 import 'screens/settings_screen.dart';
-import 'services/notification_service.dart';
+import 'services/alarm_service.dart';
+import 'screens/timer_screen.dart';
+// import 'services/notification_service.dart';
 
 void main() async {
-  // Required before any async work in main().
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Initialize notification plugin once at startup.
-  await NotificationService.init();
-
+  AlarmService.instance.init();   // ← add this line
   runApp(const ClockApp());
 }
-
 // Global notifier for theme
 final ValueNotifier<AppThemeMode> appThemeNotifier =
 ValueNotifier(AppThemeMode.dark);
@@ -155,18 +152,20 @@ class _MainShellState extends State<MainShell> {
   int _currentIndex = 0;
 
   List<Widget> get _screens => [
-    const ClockScreen(),
+   // const ClockScreen(),
     const AlarmScreen(),
     const StopwatchScreen(),
+    const TimerScreen(),
     const WorldClockScreen(),
     const EventsScreen(),
     SettingsScreen(themeMode: widget.themeMode),
   ];
 
   final List<_NavItem> _navItems = const [
-    _NavItem(icon: Icons.watch_outlined,    activeIcon: Icons.watch,    label: 'Clock'),
+ //   _NavItem(icon: Icons.watch_outlined,    activeIcon: Icons.watch,    label: 'Clock'),
     _NavItem(icon: Icons.alarm_outlined,    activeIcon: Icons.alarm,    label: 'Alarm'),
     _NavItem(icon: Icons.timer_outlined,    activeIcon: Icons.timer,    label: 'Stopwatch'),
+    _NavItem(icon: Icons.hourglass_empty_outlined, activeIcon: Icons.hourglass_bottom, label: 'Timer'),  // ← add this
     _NavItem(icon: Icons.language_outlined, activeIcon: Icons.language, label: 'World'),
     _NavItem(icon: Icons.event_outlined,    activeIcon: Icons.event,    label: 'Events'),
     _NavItem(icon: Icons.settings_outlined, activeIcon: Icons.settings, label: 'Settings'),
